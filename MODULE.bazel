@@ -1,0 +1,56 @@
+module(
+    name = "rules_openapi",
+    version = "0.1.0",
+)
+
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "bazel_skylib", version = "1.8.2")
+
+# rules_openapi reuses rules_jsonschema's toolchain pattern + the
+# `write_source_files` helper. We don't currently feed our generated
+# types through rules_jsonschema's plugins — the Rust client plugin
+# emits the type-definition + operation code itself — but the
+# composition is in scope for v0.2 (`components/schemas` extracted by
+# the OpenAPI plugin and piped through `jsonschema_rust_library`).
+bazel_dep(name = "rules_jsonschema", version = "0.1.0")
+
+bazel_dep(name = "rules_rust", version = "0.70.0")
+
+rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
+rust.toolchain(
+    edition = "2021",
+    versions = ["1.95.0"],
+)
+use_repo(rust, "rust_toolchains")
+register_toolchains("@rust_toolchains//:all")
+
+crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
+crate.from_cargo(
+    name = "openapi_crates",
+    cargo_lockfile = "//:Cargo.lock",
+    manifests = [
+        "//:Cargo.toml",
+        "//tools/openapi_to_rust_client:Cargo.toml",
+        "//tools/contract_test:Cargo.toml",
+    ],
+)
+use_repo(crate, "openapi_crates")
+
+# Register default codegen toolchains. v0.1 ships Rust clients only;
+# more languages + server-side will register here as they land.
+register_toolchains(
+    "//rust:default_rust_client_codegen_toolchain",
+)
+
+# Dev-only example fixture: the canonical OpenAPI 3.0 petstore.yaml
+# fetched on demand from OAI/OpenAPI-Specification.
+openapi_examples = use_extension(
+    "//openapi/private:extensions.bzl",
+    "openapi_examples_extension",
+    dev_dependency = True,
+)
+use_repo(openapi_examples, "openapi_keeper_example")
+
+# Dev-only.
+bazel_dep(name = "rules_shell", version = "0.6.1", dev_dependency = True)
+bazel_dep(name = "stardoc", version = "0.7.2", dev_dependency = True)

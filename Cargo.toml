@@ -1,0 +1,14 @@
+[workspace]
+resolver = "2"
+members = ["tools/openapi_to_rust_client"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[workspace.dependencies]
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"

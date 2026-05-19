@@ -1,0 +1,43 @@
+[package]
+name = "openapi-to-rust-client"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "openapi_to_rust_client"
+path = "src/main.rs"
+
+[dependencies]
+anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_yaml.workspace = true
+
+# progenitor is Oxide's "OpenAPI 3 → Rust client" generator
+# (same family as typify). Wraps the heavy lifting; we feed it an
+# openapiv3::OpenAPI and ask for tokens.
+#
+# 0.7 had an `assert!(response_types.len() <= 1)` that trips on the
+# canonical OAI petstore (which declares both a 200 and a `default`
+# error response). 0.10+ removed that assertion.
+progenitor = "0.14"
+openapiv3 = "2"
+prettyplease = "0.2"
+syn = { version = "2", features = ["parsing", "full"] }
+
+# Runtime crates the generated client references. Listed here (even
+# though this binary doesn't use them at compile time) so they appear
+# in @openapi_crates and can be wired through `openapi_rust_client`'s
+# runtime-deps attrs into the consumer's rust_library. Same trick
+# rules_jsonschema's schema_to_rust uses for serde / regress.
+progenitor-client = "0.14"
+reqwest = { version = "0.13", default-features = false, features = ["json"] }
+regress = "0.10"
+# Generated code uses chrono for date-time fields, uuid for uuid
+# fields, bytes for binary bodies. Listed here so they appear in
+# @openapi_crates regardless of whether a particular spec uses
+# them — progenitor's trait impls reference them at module scope.
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["serde"] }
+bytes = "1"

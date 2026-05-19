@@ -1,0 +1,13 @@
+load("@rules_rust//rust:defs.bzl", "rust_binary")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["Cargo.toml"])
+
+# Conformance test driver — fed a plugin binary path as argv[1], runs
+# the scenarios from //openapi:plugin_contract.md.
+rust_binary(
+    name = "contract_test_driver",
+    srcs = ["src/main.rs"],
+    edition = "2021",
+)

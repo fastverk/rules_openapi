@@ -1,0 +1,25 @@
+load("@rules_openapi//rust:defs.bzl", "openapi_rust_client")
+load("@rules_rust//rust:defs.bzl", "rust_test")
+
+# A small real OpenAPI 3 spec (Oxide's "keeper" service from
+# progenitor's own test suite), fetched via http_file. See
+# //openapi/private:extensions.bzl for why we use this instead of
+# a canonical petstore.
+openapi_rust_client(
+    name = "keeper_client",
+    spec = "@openapi_keeper_example//file:keeper.json",
+)
+
+# Compile-and-import test: pull in the generated `Client` + types,
+# verify the public surface exists. No real HTTP — that would need a
+# test server — but constructing a Client and referencing the
+# generated types fails at build time if the codegen pipeline broke.
+rust_test(
+    name = "keeper_client_test",
+    srcs = ["client_test.rs"],
+    edition = "2021",
+    deps = [
+        ":keeper_client",
+        "@openapi_crates//:serde_json",
+    ],
+)

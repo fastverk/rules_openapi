@@ -1,0 +1,20 @@
+load("@openapi_crates//:defs.bzl", "aliases", "all_crate_deps")
+load("@rules_openapi//openapi:contract_test.bzl", "openapi_plugin_contract_test")
+load("@rules_rust//rust:defs.bzl", "rust_binary")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["Cargo.toml"])
+
+rust_binary(
+    name = "openapi_to_rust_client",
+    srcs = ["src/main.rs"],
+    aliases = aliases(),
+    edition = "2021",
+    deps = all_crate_deps(),
+)
+
+openapi_plugin_contract_test(
+    name = "openapi_to_rust_client_conforms",
+    plugin = ":openapi_to_rust_client",
+)
